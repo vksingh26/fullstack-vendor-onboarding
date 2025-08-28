@@ -48,8 +48,8 @@
       </div>
       
       <div class="form-actions">
-        <button type="submit" :disabled="vendorStore.loading">
-          {{ vendorStore.loading ? 'Submitting...' : 'Add Vendor' }}
+        <button type="submit" :disabled="vendorStore.loading || success">
+          {{ vendorStore.loading ? 'Submitting...' : (success ? 'Please wait…' : 'Add Vendor') }}
         </button>
         <div v-if="vendorStore.error" class="error-message">{{ vendorStore.error }}</div>
         <div v-if="success" class="success-message">Vendor added successfully!</div>
@@ -82,6 +82,7 @@ const resetForm = () => {
 };
 
 const submitForm = async () => {
+  if (vendorStore.loading || success.value) return;
   success.value = false;
   
   try {
