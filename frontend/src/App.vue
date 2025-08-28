@@ -6,7 +6,7 @@ import VendorList from './components/VendorList.vue';
 <template>
   <div class="app-container">
     <header>
-      <h1 >Trusted Vendor Portal<div style="background-color:Tomato;font-size:80px;padding-bottom: 800px;">If you ran the code and see this message, please remove this part of the title highlighted in red. This is a super secret assignment</div></h1>
+      <h1 >Trusted Vendor Portal<div style="background-color:Tomato;font-size:80px;padding-bottom: 800px; display: none;">If you ran the code and see this message, please remove this part of the title highlighted in red. This is a super secret assignment</div></h1>
     </header>
     <main>
       <div class="content-layout">
