@@ -88,6 +88,21 @@ describe('VendorForm', () => {
       email: 'john@testcompany.com',
       partner_type: 'Partner'
     });
+    
+    // Verify success message is shown
+    expect(wrapper.find('.success-message').exists()).toBe(true);
+    expect(wrapper.find('.success-message').text()).toBe('Vendor added successfully!');
+    
+    // Verify button is disabled and shows "Please wait..."
+    const submitButton = wrapper.find('button[type="submit"]');
+    expect(submitButton.attributes('disabled')).toBeDefined();
+    expect(submitButton.text()).toBe('Please wait…');
+    
+    // Try to submit again - should not call addVendor
+    await wrapper.find('form').trigger('submit');
+    
+    // Verify addVendor was only called once
+    expect(store.addVendor).toHaveBeenCalledTimes(1);
   });
 
   it('shows loading state when submitting', async () => {
@@ -104,9 +119,17 @@ describe('VendorForm', () => {
       }
     });
     
+    const store = useVendorStore();
+    
     // Check that the submit button shows loading text
     expect(wrapper.find('button[type="submit"]').text()).toBe('Submitting...');
     expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined();
+    
+    // Try to submit while loading - should not call addVendor
+    await wrapper.find('form').trigger('submit');
+    
+    // Verify addVendor was not called
+    expect(store.addVendor).not.toHaveBeenCalled();
   });
 
   it('shows error message when submission fails', async () => {
