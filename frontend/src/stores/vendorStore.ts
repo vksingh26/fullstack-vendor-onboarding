@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { VendorService } from '../services/VendorService'
-import type { Vendor } from '../types/Vendor'
+import type { Vendor, EmailCheckResponse } from '../types/Vendor'
 
 export const useVendorStore = defineStore('vendor', () => {
   const vendors = ref<Vendor[]>([])
@@ -39,11 +39,21 @@ export const useVendorStore = defineStore('vendor', () => {
     }
   }
 
+  async function checkEmailAvailability(email: string): Promise<EmailCheckResponse> {
+    try {
+      return await VendorService.checkEmailExists(email)
+    } catch (err) {
+      console.error('Error checking email availability:', err)
+      throw err
+    }
+  }
+
   return {
     vendors,
     loading,
     error,
     fetchVendors,
-    addVendor
+    addVendor,
+    checkEmailAvailability
   }
 })
