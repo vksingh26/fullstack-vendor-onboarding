@@ -38,6 +38,27 @@ export const useVendorStore = defineStore('vendor', () => {
       loading.value = false
     }
   }
+/*
+  deleteVendor(id: number)
+  call the delete API
+  if successful, update the store’s vendors array locally (filter out the deleted id) instead of refetching the whole list from the server. This keeps the UI snappy and reduces network load.
+  if not successful, show an error message
+ */
+  async function deleteVendor(id: number) {
+    loading.value = true
+    error.value = null
+    
+    try {
+      await VendorService.deleteVendor(String(id))
+      vendors.value = vendors.value.filter(v => v.id !== id)
+    } catch (err) {
+      error.value = 'Failed to delete vendor. Please try again later.'
+      console.error(err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
 
   async function checkEmailAvailability(email: string): Promise<EmailCheckResponse> {
     try {
@@ -54,6 +75,7 @@ export const useVendorStore = defineStore('vendor', () => {
     error,
     fetchVendors,
     addVendor,
+    deleteVendor,
     checkEmailAvailability
   }
 })
