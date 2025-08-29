@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
 import VendorForm from '../../components/VendorForm.vue';
@@ -71,6 +72,12 @@ describe('VendorForm', () => {
     });
     
     const store = useVendorStore();
+    // Mock email check to return not existing
+    // @ts-expect-error spy injected by createTestingPinia
+    store.checkEmailAvailability.mockResolvedValue({ exists: false, message: 'ok' });
+    // Ensure addVendor resolves as a promise
+    // @ts-expect-error spy injected by createTestingPinia
+    store.addVendor.mockResolvedValue(undefined);
     
     // Fill out the form
     await wrapper.find('#name').setValue('Test Company');
@@ -80,6 +87,7 @@ describe('VendorForm', () => {
     
     // Submit the form
     await wrapper.find('form').trigger('submit');
+    await nextTick();
     
     // Check that the store's addVendor method was called with correct data
     expect(store.addVendor).toHaveBeenCalledWith({

@@ -128,7 +128,7 @@ describe('VendorList', () => {
     
     // Check that the table exists and has correct structure
     expect(wrapper.find('.vendors-table').exists()).toBe(true);
-    expect(wrapper.findAll('th').length).toBe(5);
+    expect(wrapper.findAll('th').length).toBe(6);
     expect(wrapper.findAll('tbody tr').length).toBe(2);
     
     // Check content of first row
@@ -138,5 +138,60 @@ describe('VendorList', () => {
     expect(firstRow.findAll('td')[2].text()).toBe('John Test');
     expect(firstRow.findAll('td')[3].text()).toBe('john@testcompany.com');
     expect(firstRow.findAll('td')[4].text()).toBe('Supplier');
+    expect(firstRow.findAll('td')[5].find('button').text()).toBe('Delete');
+  });
+
+  it('deletes a vendor after confirmation when clicking Delete', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const wrapper = mount(VendorList, {
+      global: {
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            initialState: {
+              vendor: { loading: false, vendors: mockVendors, error: null }
+            }
+          })
+        ]
+      }
+    });
+
+    const store = useVendorStore();
+    const deleteSpy = vi.spyOn(store, 'deleteVendor');
+
+    const firstRowDeleteBtn = wrapper.findAll('tbody tr')[0].find('button');
+    await firstRowDeleteBtn.trigger('click');
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(deleteSpy).toHaveBeenCalledWith(1);
+
+    confirmSpy.mockRestore();
+  });
+
+  it('does not delete when confirmation is cancelled', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const wrapper = mount(VendorList, {
+      global: {
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            initialState: {
+              vendor: { loading: false, vendors: mockVendors, error: null }
+            }
+          })
+        ]
+      }
+    });
+
+    const store = useVendorStore();
+    const deleteSpy = vi.spyOn(store, 'deleteVendor');
+
+    const firstRowDeleteBtn = wrapper.findAll('tbody tr')[0].find('button');
+    await firstRowDeleteBtn.trigger('click');
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(deleteSpy).not.toHaveBeenCalled();
+
+    confirmSpy.mockRestore();
   });
 });

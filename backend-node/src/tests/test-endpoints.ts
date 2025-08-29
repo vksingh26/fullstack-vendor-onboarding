@@ -77,6 +77,30 @@ async function testEndpoints(): Promise<void> {
         const checkNewVendorEmail: AxiosResponse<EmailCheckResponse> = await axios.get(`${BASE_URL}/vendors/check-email/newjohndoe@test.com`);
         console.log('Response:', checkNewVendorEmail.data);
 
+        // Test 6: Delete the newly added vendor by id
+        console.log('\n6. Deleting the newly added vendor...');
+        const newVendorId = (newVendor.data as Vendor).id as number;
+        const deleteResp = await axios.delete(`${BASE_URL}/vendors/${newVendorId}`);
+        console.log('Delete response status:', deleteResp.status);
+
+        // Test 7: Verify deletion (check-email should now be available)
+        console.log('7. Verifying deletion via email check...');
+        const checkAfterDelete: AxiosResponse<EmailCheckResponse> = await axios.get(`${BASE_URL}/vendors/check-email/newjohndoe@test.com`);
+        console.log('Response after delete:', checkAfterDelete.data);
+
+        // Test 8: Deleting again should return 404
+        console.log('8. Deleting again should result in 404...');
+        try {
+            await axios.delete(`${BASE_URL}/vendors/${newVendorId}`);
+            console.log('Unexpected success on second delete');
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                console.log('Expected 404 response:', error.response.status, error.response.data);
+            } else {
+                console.log('Error:', (error as Error).message);
+            }
+        }
+
     } catch (error) {
         console.error('Test failed:', (error as Error).message);
         if (axios.isAxiosError(error)) {

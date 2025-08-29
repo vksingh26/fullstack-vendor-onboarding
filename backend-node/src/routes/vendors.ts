@@ -87,4 +87,23 @@ router.post('/', (req: Request, res: Response) => {
     });
 });
 
+// DELETE /vendors/:id - Delete a vendor by ID
+// It extracts id from URL params and validates it. If missing, returns 400.
+// It uses a RETURNING clause to get the id of the deleted vendor.
+// If the vendor is not found, it returns 404.
+// If the vendor is found, it deletes the vendor and returns 204.
+// If the vendor is not found, it returns 404.
+// If the vendor is found, it deletes the vendor and returns 204.
+router.delete('/:id', (req: Request, res: Response) => {
+    const { id } = req.params;
+  if (!id) return res.status(400).json({ error: 'Vendor id is required' });
+
+  const sql = 'DELETE FROM vendors WHERE id = ? RETURNING id';
+  db.all(sql, [id], (err, rows: Array<{ id: number }>) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!rows || rows.length === 0) return res.status(404).json({ error: 'Vendor not found' });
+    return res.status(204).send();
+  });
+});
+
 export default router;

@@ -12,6 +12,7 @@
           <th>Contact Person</th>
           <th>Email</th>
           <th>Partner Type</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -21,6 +22,9 @@
           <td>{{ vendor.contact_person }}</td>
           <td>{{ vendor.email }}</td>
           <td>{{ vendor.partner_type }}</td>
+          <td>
+            <button class="delete-btn" @click.stop="onDelete(vendor.id)">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -37,6 +41,19 @@ const vendorStore = useVendorStore();
 onMounted(() => {
   vendorStore.fetchVendors();
 });
+
+/* delete vendor with id
+ add a confirmation dialog
+ if confirmed, delete the vendor
+ if not confirmed, do nothing
+ */
+
+function onDelete(id?: number) {
+  if (!id) return;
+  const confirmed = window.confirm('Are you sure you want to delete this vendor?');
+  if (!confirmed) return;
+  vendorStore.deleteVendor(id);
+}
 </script>
 
 <style scoped>
@@ -75,5 +92,18 @@ onMounted(() => {
   padding: 20px;
   text-align: center;
   color: #666;
+}
+
+.delete-btn {
+  background-color: #e53e3e;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #c53030;
 }
 </style>
