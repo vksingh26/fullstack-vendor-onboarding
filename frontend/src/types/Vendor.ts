@@ -5,3 +5,9 @@ export interface Vendor {
     email: string;
     partner_type: 'Supplier' | 'Partner';
 }
+
+export interface EmailCheckResponse {
+    exists: boolean;
+    message: string;
+    vendorName?: string;
+}

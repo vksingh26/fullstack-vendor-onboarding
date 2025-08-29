@@ -32,7 +32,10 @@
           type="email" 
           required 
           placeholder="contact@example.com"
+          @blur="onEmailBlur"
         />
+        <div v-if="emailError" class="email-error-message">{{ emailError }}</div>
+        <div v-if="emailChecking" class="email-checking-message">Checking email availability...</div>
       </div>
       
       <div class="form-group">
@@ -48,7 +51,7 @@
       </div>
       
       <div class="form-actions">
-        <button type="submit" :disabled="vendorStore.loading || success">
+        <button type="submit" :disabled="vendorStore.loading || success || emailChecking">
           {{ vendorStore.loading ? 'Submitting...' : (success ? 'Please wait…' : 'Add Vendor') }}
         </button>
         <div v-if="vendorStore.error" class="error-message">{{ vendorStore.error }}</div>
@@ -73,18 +76,29 @@ const form = reactive<Vendor>({
 });
 
 const success = ref(false);
+const emailError = ref<string | null>(null);
+const emailChecking = ref(false);
+const lastDuplicateEmail = ref<string | null>(null);
 
 const resetForm = () => {
   form.name = '';
   form.contact_person = '';
   form.email = '';
   form.partner_type = 'Supplier';
+  emailError.value = null;
 };
+
+// Email duplication is checked on submit only
 
 const submitForm = async () => {
   if (vendorStore.loading || success.value) return;
   success.value = false;
-  
+  emailError.value = null;
+
+  // Pre-check email duplication on submit
+  const isDuplicate = await checkEmailDuplication();
+  if (isDuplicate) return;
+
   try {
     await vendorStore.addVendor({ ...form });
     success.value = true;
@@ -96,6 +110,43 @@ const submitForm = async () => {
     }, 2000);
   } catch (err) {
     // Error is already handled in the store
+  }
+};
+
+// Returns true if email is duplicate, otherwise false
+const checkEmailDuplication = async (): Promise<boolean> => {
+  if (!form.email || form.email.length < 3) {
+    emailError.value = null;
+    return false;
+  }
+
+  emailChecking.value = true;
+  emailError.value = null;
+  try {
+    const result = await vendorStore.checkEmailAvailability(form.email);
+    if (result.exists) {
+      emailError.value = `This email is already registered to ${result.vendorName || 'another vendor'}`;
+      lastDuplicateEmail.value = form.email;
+      return true;
+    }
+    lastDuplicateEmail.value = null;
+    return false;
+  } catch (err) {
+    console.error('Error checking email:', err);
+    return false;
+  } finally {
+    emailChecking.value = false;
+  }
+};
+
+// Clears email error on blur if user has changed the email since duplication error
+const onEmailBlur = () => {
+  if (!emailError.value) return;
+  if (!lastDuplicateEmail.value) return;
+  const current = (form.email || '').trim().toLowerCase();
+  const previous = lastDuplicateEmail.value.trim().toLowerCase();
+  if (current && current !== previous) {
+    emailError.value = null;
   }
 };
 </script>
@@ -160,5 +211,19 @@ button:disabled {
 .success-message {
   color: #4CAF50;
   margin-top: 10px;
+}
+
+.email-error-message {
+  color: #f44336;
+  margin-top: 5px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.email-checking-message {
+  color: #2196F3;
+  margin-top: 5px;
+  font-size: 14px;
+  font-style: italic;
 }
 </style>

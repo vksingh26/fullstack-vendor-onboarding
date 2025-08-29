@@ -1,4 +1,4 @@
-import type { Vendor } from '../types/Vendor';
+import type { Vendor, EmailCheckResponse } from '../types/Vendor';
 const useNodeBackend = true; // Set to true if using Node backend, false for Java backend
 
 // Use environment variables or default to localhost for development
@@ -63,20 +63,23 @@ export const VendorService = {
     }
   },
   
-  async checkEmailExists(email: string): Promise<boolean> {
+  async checkEmailExists(email: string): Promise<EmailCheckResponse> {
     try {
-      const response = await fetch(`${API_URL}/vendors/check-email?email=${encodeURIComponent(email)}`);
+      const response = await fetch(`${API_URL}/vendors/check-email/${encodeURIComponent(email)}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      return data.exists;
+      return data;
     } catch (error) {
       console.error('Error checking email:', error);
-      // Default to allowing the email if the check fails
-      return false;
+      // Return a default response if the check fails
+      return {
+        exists: false,
+        message: 'Unable to verify email availability'
+      };
     }
   }
 }
