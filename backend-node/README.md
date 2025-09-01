@@ -75,7 +75,8 @@ The backend uses a multi-stage Docker build to produce a small, production-ready
    3. Build and Run
       - docker build -t backend-node ./backend-node
       - docker run -d -p 3000:3000 --name backend-node backend-node
-      - Access backend API at http://localhost:3000
+      - Access backend API at http://localhost:3000/api/{endpointName}
+      - Health check: http://localhost:3000/health
       - SQLite database files are stored in the container’s internal /app/data volume.
       - Data persists across container restarts even without a host folder mapping.
    4. Why Multi-Stage?
