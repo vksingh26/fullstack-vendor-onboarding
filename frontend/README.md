@@ -81,3 +81,25 @@ For coverage report:
 ```
 npm run test:coverage
 ```
+## Frontend Dockerfile (Vue + Nginx)
+The frontend uses a multi-stage Docker build to keep the final image small and efficient.
+   1. Build Stage (Node 20 + Alpine)
+      - Base image: Uses a lightweight Node.js image (node:20-alpine) to build the app.
+      - WORKDIR: Sets /app as the working directory.
+      - Dependencies: Copies package.json + package-lock.json and installs dependencies with npm install.
+      - Source code: Copies the full project into the container.
+      - Build-time API URL:
+         - Accepts VITE_API_URL_NODE as a build argument.
+         - Sets it as an environment variable so Vite can bake the backend API URL into the frontend at build time.
+         - Example
+            docker build --build-arg VITE_API_URL_NODE=http://localhost:3000/api -t frontend .
+      - Build command: Runs npm run build → outputs optimized static files into /dist.
+   2. Production Stage (Nginx + Alpine)
+      - Base image: Uses a minimal nginx:alpine image.
+      - Static files: Copies the built /dist folder from the build stage into Nginx’s web root (/usr/share/nginx/html).
+      - Static files: Copies the built /dist folder from the build stage into Nginx’s web root (/usr/share/nginx/html).
+      - Static files: Copies the built /dist folder from the build stage into Nginx’s web root (/usr/share/nginx/html).
+   3. Why Multi-Stage?
+      - Keeps final image small → only Nginx + static files, no Node or build tools.
+      - Faster startup → Nginx serves prebuilt files directly.
+      - Security → build dependencies don’t make it into production.

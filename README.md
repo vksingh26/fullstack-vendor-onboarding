@@ -110,3 +110,33 @@ You're welcome to make UX improvements or add minor enhancements, as long as the
 ---
 
 We're excited to see how you approach these tasks — feel free to get creative, make reasonable trade-offs, and show us how you think as an engineer. We're particularly interested in your understanding of full-stack development and DevOps practices.
+
+## Docker Compose Setup
+This project uses Docker Compose to run both the backend (Node + SQLite) and frontend (Vue + Nginx) together with a single command.
+ 1. backend-node (API + Database)
+  - build.context: Uses the ./backend-node/Dockerfile to build the backend image.
+  - container_name: Names the container backend-node
+  - ports: Maps port 3000 on your machine → 3000 in the container.
+  - environment: Sets PORT=3000 so the backend knows which port to run on.
+  - volumes: Maps ./backend-node/data (on host) → /app/data (inside container).
+   - This ensures SQLite database files are persistent even if the container restarts.
+  - restart: unless-stopped: Ensures the service auto-restarts if it crashes, unless manually stopped.
+ 2. frontend (Vue + Nginx)
+  - build.context: Uses the ./frontend/Dockerfile to build the frontend image.
+  - container_name: Names the container frontend.
+  - ports: Maps port 5173 on your machine → port 80 inside the container (Nginx).
+  - environment: Injects VITE_API_URL_NODE=http://localhost:3000/api at build time so the frontend calls the backend API.
+  - depends_on: Ensures backend-node starts before the frontend.
+  - restart: unless-stopped: Same auto-restart behavior as the backend.
+
+
+## Run application locally in docker
+ - open -a Docker 
+ -  docker compose build --build-arg VITE_API_URL_NODE=http://localhost:3000/api
+ - docker compose up -d
+ - docker compose down -v (To kill docker/running containers) 
+
+## Access
+ - Frontend (Vue app): http://localhost:5173
+ - Backend API (Node + SQLite): http://localhost:3000/api
+
