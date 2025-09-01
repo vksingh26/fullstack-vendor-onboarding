@@ -110,3 +110,46 @@ You're welcome to make UX improvements or add minor enhancements, as long as the
 ---
 
 We're excited to see how you approach these tasks — feel free to get creative, make reasonable trade-offs, and show us how you think as an engineer. We're particularly interested in your understanding of full-stack development and DevOps practices.
+
+## Docker Compose Setup
+This project uses Docker Compose to run both the backend (Node + SQLite) and frontend (Vue + Nginx) together with a single command.
+ 1. backend-node (API + Database)
+  - build.context: Uses the ./backend-node/Dockerfile to build the backend image.
+  - container_name: Names the container backend-node
+  - ports: Maps port 3000 on your machine → 3000 in the container.
+  - environment: Sets PORT=3000 so the backend knows which port to run on.
+  - volumes: Maps ./backend-node/data (on host) → /app/data (inside container).
+   - This ensures SQLite database files are persistent even if the container restarts.
+  - restart: unless-stopped: Ensures the service auto-restarts if it crashes, unless manually stopped.
+ 2. frontend (Vue + Nginx)
+  - build.context: Uses the ./frontend/Dockerfile to build the frontend image.
+  - container_name: Names the container frontend.
+  - ports: Maps port 5173 on your machine → port 80 inside the container (Nginx).
+  - environment: Injects VITE_API_URL_NODE=http://localhost:3000/api at build time so the frontend calls the backend API.
+  - depends_on: Ensures backend-node starts before the frontend.
+  - restart: unless-stopped: Same auto-restart behavior as the backend.
+
+
+## Run application locally in docker
+ - open -a Docker 
+ - docker compose build --build-arg VITE_API_URL_NODE=http://localhost:3000/api
+ - docker compose up -d
+ - docker compose down -v (To kill docker/running containers) 
+
+## Access
+ - Frontend (Vue app): http://localhost:5173
+ - Backend API (Node + SQLite): http://localhost:3000/api/{endpointName}
+
+
+## Challenges encountered
+  The primary challenges arose during the Docker setup process. Since I was not very familiar with Dockerization initially, I needed to spend some time learning the fundamentals before writing the configuration. This included understanding multi-stage builds, managing environment variables, persisting SQLite data, and mapping ports correctly. Apart from these containerization and configuration-related tasks, the rest of the development proceeded smoothly without significant issues.
+
+## What do I love most about being a software engineer ?
+  I love being a software engineer because of the constant challenges and opportunities to solve real-world problems. Every day presents a chance to design efficient solutions and improve user experiences. I also enjoy exploring new technologies and stacks, which keeps the work engaging and allows me to continuously learn while making a tangible impact on people’s daily lives.
+  Currently, I am exploring ways to align myself with the rapidly evolving AI landscape, which makes my work even more exciting and dynamic.
+
+## What is most important to me when it comes to working in a team ?
+  Clear communication, mutual respect, and collaboration are the most important aspects for me. I value a team environment where everyone feels comfortable sharing ideas, providing feedback, and working together to solve problems efficiently. Such an environment not only ensures the success of the project but also fosters both personal and professional growth for each team member.
+
+## What is the worst part of being a software engineer?
+  The most challenging aspect can be dealing with tight deadlines and high-pressure situations, which sometimes make it difficult to balance quality and speed. Additionally, keeping up with rapidly changing technologies and stacks can feel overwhelming at times. However, these challenges also provide opportunities for learning and growth, making the role both demanding and rewarding.

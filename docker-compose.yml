@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  backend-node:
+    build:
+      context: ./backend-node
+    container_name: backend-node
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    volumes:
+      - ./backend-node/data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL_NODE=http://localhost:3000/api
+    depends_on:
+      - backend-node
+    restart: unless-stopped
